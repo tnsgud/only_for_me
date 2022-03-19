@@ -1,0 +1,15 @@
+{
+    "playList": [
+        {
+            "id": 123123,
+            "name": "my play list",
+            "songs": [
+                {
+                    "id": "youtube video id",
+                    "title": "video title",
+                    "thumbnail": "image url"
+                }
+            ]
+        }
+    ]
+}

@@ -37,6 +37,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<YouTubeVideo> youtubeVideos = [];
+  List<String> demo = [];
+  bool isLoading = false;
   final TextEditingController _controller = TextEditingController();
 
   @override
@@ -76,19 +78,37 @@ class _MyHomePageState extends State<MyHomePage> {
     await fileStream.close();
   }
 
+  Future<String> _fetch1() async {
+    await Future.delayed(const Duration(seconds: 5));
+
+    return 'Hello';
+  }
+
   Future searchYoutube() async {
     if (_controller.text.isEmpty) {
       return;
     }
 
+    await Future.delayed(const Duration(seconds: 5));
     var youtubeAPI = YoutubeAPI(
       '${dotenv.env['YOUTUBE_API_KEY']}',
       maxResults: 50,
     );
+
     youtubeVideos = await youtubeAPI.search(
       _controller.text,
       type: 'video',
     );
+  }
+
+  Future demoMethod() async {
+    await Future.delayed(const Duration(seconds: 5));
+
+    for (var i = 0; i < 10; i++) {
+      demo.add('$i');
+    }
+
+    return demo;
   }
 
   get _getExternalDir async {
@@ -106,41 +126,69 @@ class _MyHomePageState extends State<MyHomePage> {
             child: TextField(
               controller: _controller,
               textInputAction: TextInputAction.search,
-              onSubmitted: (value) {
-                searchYoutube();
-              },
+              onSubmitted: (value) => demoMethod(),
             ),
           ),
-          TextButton(
-            child: const Text("hell"),
-            onPressed: () => _getStoragePermission(),
-          ),
           FutureBuilder(
-            future: searchYoutube(),
-            builder: (context, _) {
-              return Expanded(
-                child: ListView.separated(
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      title: Text(youtubeVideos[index].title),
-                      onTap: () async => _downloadYoutubeAudio(
-                        videoId: youtubeVideos[index].id!,
-                        path:
-                            '${await _getExternalDir}/${youtubeVideos[index].title}.wav',
-                      ),
-                    );
-                  },
-                  separatorBuilder: (context, index) => const Divider(),
-                  itemCount: youtubeVideos.length,
-                ),
-              );
+            future: demoMethod(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return Text('error:${snapshot.error}');
+              } else {
+                return Expanded(
+                  child: ListView.separated(
+                    itemBuilder: (context, index) {
+                      return Text('hello ${demo[index]}');
+                    },
+                    separatorBuilder: (context, index) => const Divider(),
+                    itemCount: demo.length,
+                  ),
+                );
+              }
             },
           )
+          // FutureBuilder(
+          //   future: searchYoutube(),
+          //   builder: (context, snapshot) {
+          //     if (snapshot.hasData == false) {
+          //       return const CircularProgressIndicator();
+          //     } else if (snapshot.hasError) {
+          //       return Text('error:${snapshot.error}');
+          //     } else {
+          //       return Expanded(
+          //         child: ListView.separated(
+          //           itemBuilder: (context, index) {
+          //             var value = false;
+          //             return ListTile(
+          //               leading: Image.network(
+          //                   youtubeVideos[index].thumbnail.small.url!),
+          //               title: Text(youtubeVideos[index].title),
+          //               onTap: () async => _downloadYoutubeAudio(
+          //                 videoId: youtubeVideos[index].id!,
+          //                 path:
+          //                     '${await _getExternalDir}/${youtubeVideos[index].title}.wav',
+          //               ),
+          //               trailing: Checkbox(
+          //                 value: value,
+          //                 onChanged: (newValue) {
+          //                   print(newValue);
+          //                   setState(() {
+          //                     value = newValue!;
+          //                   });
+          //                 },
+          //               ),
+          //             );
+          //           },
+          //           separatorBuilder: (context, index) => const Divider(),
+          //           itemCount: youtubeVideos.length,
+          //         ),
+          //       );
+          //     }
+          //   },
+          // ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => searchYoutube(),
-        child: const Icon(Icons.search),
       ),
     );
   }
