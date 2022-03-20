@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -37,15 +38,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<YouTubeVideo> youtubeVideos = [];
-  List<String> demo = [];
-  bool isLoading = false;
+  List<bool> isSelected = [];
   final TextEditingController _controller = TextEditingController();
-
-  @override
-  void initState() {
-    _getStoragePermission();
-    super.initState();
-  }
 
   void _getStoragePermission() async {
     var status = await Permission.storage.status;
@@ -78,14 +72,8 @@ class _MyHomePageState extends State<MyHomePage> {
     await fileStream.close();
   }
 
-  Future<String> _fetch1() async {
-    await Future.delayed(const Duration(seconds: 5));
-
-    return 'Hello';
-  }
-
   Future searchYoutube() async {
-    if (_controller.text.isEmpty) {
+    if (_controller.text.isEmpty || youtubeVideos.isNotEmpty) {
       return;
     }
 
@@ -99,21 +87,34 @@ class _MyHomePageState extends State<MyHomePage> {
       _controller.text,
       type: 'video',
     );
-  }
 
-  Future demoMethod() async {
-    await Future.delayed(const Duration(seconds: 5));
+    isSelected = List<bool>.filled(youtubeVideos.length, false);
 
-    for (var i = 0; i < 10; i++) {
-      demo.add('$i');
-    }
-
-    return demo;
+    return youtubeVideos;
   }
 
   get _getExternalDir async {
     var _externalStorageDirectory = await getExternalStorageDirectory();
     return _externalStorageDirectory?.path;
+  }
+
+  @override
+  void initState() {
+    print('initState');
+    _getStoragePermission();
+    youtubeVideos.clear();
+    super.initState();
+  }
+
+  void savePlayList() {
+    var testMap = {'id': 1234, 'name': 'test playlist', 'playlist': []};
+    print(jsonEncode(testMap));
+  }
+
+  @override
+  void dispose() {
+    savePlayList();
+    super.dispose();
   }
 
   @override
@@ -126,70 +127,57 @@ class _MyHomePageState extends State<MyHomePage> {
             child: TextField(
               controller: _controller,
               textInputAction: TextInputAction.search,
-              onSubmitted: (value) => demoMethod(),
+              onSubmitted: (value) {
+                setState(() {
+                  youtubeVideos.clear();
+                });
+              },
             ),
           ),
           FutureBuilder(
-            future: demoMethod(),
+            future: searchYoutube(),
             builder: (context, snapshot) {
-              if (!snapshot.hasData) {
+              if (!snapshot.hasData &&
+                  _controller.text.isNotEmpty &&
+                  youtubeVideos.isEmpty) {
                 return const CircularProgressIndicator();
-              } else if (snapshot.hasError) {
-                return Text('error:${snapshot.error}');
               } else {
                 return Expanded(
                   child: ListView.separated(
                     itemBuilder: (context, index) {
-                      return Text('hello ${demo[index]}');
+                      return CheckboxListTile(
+                        secondary: Image.network(
+                          youtubeVideos[index].thumbnail.small.url!,
+                        ),
+                        title: Text(
+                          youtubeVideos[index].title,
+                        ),
+                        onChanged: (bool? value) {
+                          setState(() {
+                            isSelected[index] = value!;
+                          });
+                        },
+                        value: isSelected[index],
+                      );
                     },
                     separatorBuilder: (context, index) => const Divider(),
-                    itemCount: demo.length,
+                    itemCount: youtubeVideos.length,
                   ),
                 );
               }
             },
           )
-          // FutureBuilder(
-          //   future: searchYoutube(),
-          //   builder: (context, snapshot) {
-          //     if (snapshot.hasData == false) {
-          //       return const CircularProgressIndicator();
-          //     } else if (snapshot.hasError) {
-          //       return Text('error:${snapshot.error}');
-          //     } else {
-          //       return Expanded(
-          //         child: ListView.separated(
-          //           itemBuilder: (context, index) {
-          //             var value = false;
-          //             return ListTile(
-          //               leading: Image.network(
-          //                   youtubeVideos[index].thumbnail.small.url!),
-          //               title: Text(youtubeVideos[index].title),
-          //               onTap: () async => _downloadYoutubeAudio(
-          //                 videoId: youtubeVideos[index].id!,
-          //                 path:
-          //                     '${await _getExternalDir}/${youtubeVideos[index].title}.wav',
-          //               ),
-          //               trailing: Checkbox(
-          //                 value: value,
-          //                 onChanged: (newValue) {
-          //                   print(newValue);
-          //                   setState(() {
-          //                     value = newValue!;
-          //                   });
-          //                 },
-          //               ),
-          //             );
-          //           },
-          //           separatorBuilder: (context, index) => const Divider(),
-          //           itemCount: youtubeVideos.length,
-          //         ),
-          //       );
-          //     }
-          //   },
-          // ),
         ],
       ),
+      floatingActionButton: isSelected.contains(true)
+          ? FloatingActionButton(
+              tooltip: 'add Playlist',
+              child: const Icon(Icons.add),
+              onPressed: () {
+                savePlayList();
+              },
+            )
+          : null,
     );
   }
 }
