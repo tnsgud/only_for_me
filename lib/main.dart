@@ -1,11 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
+import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:youtube_api/youtube_api.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get/get.dart';
+import 'package:only_for_me/pages/search.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:youtube_api/youtube_api.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 Future main() async {
@@ -18,7 +24,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       darkTheme: ThemeData(
         brightness: Brightness.dark,
       ),
@@ -37,60 +43,41 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<YouTubeVideo> youtubeVideos = [];
-  List<bool> isSelected = [];
-  final TextEditingController _controller = TextEditingController();
+  double _height = 100, _width = 600;
+  Map<String, dynamic> playlist = {};
+  bool isExpand = false;
 
-  void _getStoragePermission() async {
-    var status = await Permission.storage.status;
-    if (status.isDenied) {
-      await Permission.storage.request();
-    }
-  }
+  Future<File> get _localPlaylistFile async =>
+      File('${await _getExternalDir}/playlist.json');
 
-  void _downloadYoutubeAudio({
-    required String videoId,
-    required String path,
-  }) async {
-    var manifest =
-        await YoutubeExplode().videos.streamsClient.getManifest(videoId);
-    var streamInfo = manifest.audioOnly.withHighestBitrate();
-    _writeFile(streamInfo: streamInfo, path: path);
-  }
-
-  void _writeFile({
-    required AudioOnlyStreamInfo streamInfo,
-    required String path,
-  }) async {
-    var stream = YoutubeExplode().videos.streamsClient.get(streamInfo);
-    var file = File(path);
-    var fileStream = file.openWrite();
-
-    await stream.pipe(fileStream);
-
-    await fileStream.flush();
-    await fileStream.close();
-  }
-
-  Future searchYoutube() async {
-    if (_controller.text.isEmpty || youtubeVideos.isNotEmpty) {
-      return;
+  void initPlaylistFile() async {
+    final _file = await _localPlaylistFile;
+    var _fileContent = '';
+    if (await _file.exists()) {
+      _fileContent = await _file.readAsString();
+      var _content = await rootBundle.loadString('assets/test.json');
+      _fileContent = _content;
+    } else {
+      var _content = await rootBundle.loadString('assets/test.json');
+      _fileContent = _content;
+      _file.writeAsString(_fileContent);
     }
 
-    await Future.delayed(const Duration(seconds: 5));
-    var youtubeAPI = YoutubeAPI(
-      '${dotenv.env['YOUTUBE_API_KEY']}',
-      maxResults: 50,
-    );
+    playlist = jsonDecode(_fileContent) as Map<String, dynamic>;
+  }
 
-    youtubeVideos = await youtubeAPI.search(
-      _controller.text,
-      type: 'video',
-    );
+  void userLoginCheck() {}
 
-    isSelected = List<bool>.filled(youtubeVideos.length, false);
+  @override
+  void initState() {
+    initPlaylistFile();
+    userLoginCheck();
+    super.initState();
+  }
 
-    return youtubeVideos;
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   get _getExternalDir async {
@@ -98,86 +85,123 @@ class _MyHomePageState extends State<MyHomePage> {
     return _externalStorageDirectory?.path;
   }
 
-  @override
-  void initState() {
-    print('initState');
-    _getStoragePermission();
-    youtubeVideos.clear();
-    super.initState();
-  }
+  void printFile() async {}
 
-  void savePlayList() {
-    var testMap = {'id': 1234, 'name': 'test playlist', 'playlist': []};
-    print(jsonEncode(testMap));
-  }
+  Widget category() {
+    return Flexible(
+      child: ListView.builder(
+        itemCount: playlist.length,
+        itemBuilder: (context, index) {
+          var songs = playlist[playlist.keys.elementAt(index)];
 
-  @override
-  void dispose() {
-    savePlayList();
-    super.dispose();
+          return Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    playlist.keys.elementAt(index),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.expand_more),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    _width = MediaQuery.of(context).size.width;
+
     return Scaffold(
-      body: Column(
+      appBar: AppBar(
+          leading: IconButton(
+        icon: const Icon(Icons.search),
+        onPressed: () => Get.to(() => const SearchPage()),
+      )),
+      body: Stack(
+        alignment: Alignment.bottomCenter,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _controller,
-              textInputAction: TextInputAction.search,
-              onSubmitted: (value) {
-                setState(() {
-                  youtubeVideos.clear();
-                });
-              },
-            ),
+          Container(
+            color: Colors.amber,
           ),
-          FutureBuilder(
-            future: searchYoutube(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData &&
-                  _controller.text.isNotEmpty &&
-                  youtubeVideos.isEmpty) {
-                return const CircularProgressIndicator();
-              } else {
-                return Expanded(
-                  child: ListView.separated(
-                    itemBuilder: (context, index) {
-                      return CheckboxListTile(
-                        secondary: Image.network(
-                          youtubeVideos[index].thumbnail.small.url!,
-                        ),
-                        title: Text(
-                          youtubeVideos[index].title,
-                        ),
-                        onChanged: (bool? value) {
-                          setState(() {
-                            isSelected[index] = value!;
-                          });
-                        },
-                        value: isSelected[index],
-                      );
-                    },
-                    separatorBuilder: (context, index) => const Divider(),
-                    itemCount: youtubeVideos.length,
-                  ),
-                );
+          GestureDetector(
+            onVerticalDragUpdate: (details) {
+              if (details.delta.dy < 0) {
+                setState(() {
+                  _height = MediaQuery.of(context).size.height;
+                });
+              }
+
+              if (details.delta.dy > 0) {
+                setState(() {
+                  _height = 100;
+                });
               }
             },
-          )
+            child: AnimatedContainer(
+              height: _height,
+              width: _width,
+              onEnd: () {
+                setState(() {
+                  isExpand = _height != 100;
+                });
+              },
+              duration: const Duration(milliseconds: 500),
+              color: Colors.black,
+              curve: Curves.fastOutSlowIn,
+              child: isExpand
+                  ? Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '${playlist['K-POP'][0]['title']}',
+                            style: const TextStyle(
+                                fontSize: 30, fontWeight: FontWeight.bold),
+                          ),
+                          Image.network(
+                            '${playlist['K-POP'][0]['thumbnail'][1]}',
+                          ),
+                          const SizedBox(
+                            height: 100,
+                          ),
+                          ProgressBar(
+                              progress: Duration(seconds: 10),
+                              total: Duration(seconds: 100))
+                        ],
+                      ),
+                    )
+                  : Row(
+                      children: [
+                        Image.network(
+                          '${playlist['K-POP'][0]['thumbnail'][0]}',
+                        ),
+                        Column(
+                          children: [
+                            Text(
+                              '${playlist['K-POP'][0]['title']}',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+            ),
+          ),
         ],
       ),
-      floatingActionButton: isSelected.contains(true)
-          ? FloatingActionButton(
-              tooltip: 'add Playlist',
-              child: const Icon(Icons.add),
-              onPressed: () {
-                savePlayList();
-              },
-            )
-          : null,
     );
   }
 }
