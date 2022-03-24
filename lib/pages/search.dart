@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:only_for_me/main.dart';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -73,12 +74,23 @@ class _SearchPageState extends State<SearchPage> {
     return youtubeVideos;
   }
 
+  Future<File> get _localPlaylistFile async =>
+      File('${await _getExternalDir}/playlist.json');
+
   get _getExternalDir async {
     var _externalStorageDirectory = await getExternalStorageDirectory();
     return _externalStorageDirectory?.path;
   }
 
-  void savePlayList() {}
+  void savePlayList() async {
+    // for (var item in isSelected.where((element) => element).map((e) => isSelected.indexOf(e))) {
+    //   if(item && MyApp.playlist['K-POP'].contains(element)){
+
+    //   }
+    // }
+    // print(MyApp.playlist.keys);
+    // print(MyApp.playlist);
+  }
 
   @override
   void initState() {
@@ -124,6 +136,7 @@ class _SearchPageState extends State<SearchPage> {
                           youtubeVideos[index].title,
                         ),
                         onChanged: (bool? value) {
+                          print(youtubeVideos[index]);
                           setState(() {
                             isSelected[index] = value!;
                           });
