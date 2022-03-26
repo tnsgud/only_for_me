@@ -1,18 +1,13 @@
-import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
-import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
-import 'package:only_for_me/pages/search.dart';
+import 'package:only_for_me/pages/search_page.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:youtube_api/youtube_api.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 Future main() async {
   await dotenv.load(fileName: '.env');
