@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:only_for_me/pages/sign_page.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +57,24 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  // Future<UserCredential> signInWithGitHub() async {
+  //   // Create a GitHubSignIn instance
+  //   final GitHubSignIn gitHubSignIn = GitHubSignIn(
+  //       clientId: '98f368c528a09afca514',
+  //       clientSecret: 'a788ba6110294584cc915c2ad2b13181c8021910',
+  //       redirectUrl: 'https://my-project.firebaseapp.com/__/auth/handler');
+
+  //   // Trigger the sign-in flow
+  //   final result = await gitHubSignIn.signIn(context);
+
+  //   // Create a credential from the access token
+  //   final githubAuthCredential = GithubAuthProvider.credential(result.token);
+
+  //   // Once signed in, return the UserCredential
+  //   return await FirebaseAuth.instance
+  //       .signInWithCredential(githubAuthCredential);
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,17 +111,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   backgroundColor: Colors.deepPurple[400],
                 ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            GestureDetector(
-              onTap: () {
-                Get.to(() => const SignPage());
-              },
-              child: textWithNotoSans(
-                data: '아직 계정이 없으신가요?',
-                fontSize: 15,
-                color: Colors.purple[400],
               ),
             )
           ],
