@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 
@@ -57,23 +59,35 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  // Future<UserCredential> signInWithGitHub() async {
-  //   // Create a GitHubSignIn instance
-  //   final GitHubSignIn gitHubSignIn = GitHubSignIn(
-  //       clientId: '98f368c528a09afca514',
-  //       clientSecret: 'a788ba6110294584cc915c2ad2b13181c8021910',
-  //       redirectUrl: 'https://my-project.firebaseapp.com/__/auth/handler');
+  @override
+  void initState() {
+    super.initState();
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user == null) {
+        print('User is currently signed out!');
+      } else {
+        print('User is signed in!');
+      }
+    });
+  }
 
-  //   // Trigger the sign-in flow
-  //   final result = await gitHubSignIn.signIn(context);
+  Future<UserCredential> signInWithGoogle() async {
+    // Trigger the authentication flow
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-  //   // Create a credential from the access token
-  //   final githubAuthCredential = GithubAuthProvider.credential(result.token);
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
 
-  //   // Once signed in, return the UserCredential
-  //   return await FirebaseAuth.instance
-  //       .signInWithCredential(githubAuthCredential);
-  // }
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+
+    // Once signed in, return the UserCredential
+    return await FirebaseAuth.instance.signInWithCredential(credential);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,11 +114,32 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Container(
                   margin: const EdgeInsets.all(8.0),
                   child: textWithNotoSans(
-                    data: '로그인',
+                    data: '구글로 로그인',
                     fontSize: 20,
                   ),
                 ),
-                onPressed: () {},
+                onPressed: signInWithGoogle,
+                style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  backgroundColor: Colors.deepPurple[400],
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 150,
+              child: TextButton(
+                child: Container(
+                  margin: const EdgeInsets.all(8.0),
+                  child: textWithNotoSans(
+                    data: '로그아웃',
+                    fontSize: 20,
+                  ),
+                ),
+                onPressed: () {
+                  GoogleSignIn().signOut();
+                },
                 style: TextButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
