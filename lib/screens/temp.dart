@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
-import 'package:only_for_me/pages/search_page.dart';
+import 'package:only_for_me/screens/search.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:youtube_api/youtube_api.dart';
 
