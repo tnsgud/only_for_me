@@ -12,33 +12,11 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: Text('Drawer Header'),
-            ),
-            ListTile(
-              title: const Text('Item 1'),
-              onTap: () {},
-            ),
-            ListTile(
-              title: const Text('Item 2'),
-              onTap: () {},
-            ),
-          ],
-        ),
-      ),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
         leading: Builder(
-          builder: (context) => // Ensure Scaffold is in context
-              IconButton(
+          builder: (context) => IconButton(
             onPressed: () => Scaffold.of(context).openDrawer(),
             icon: const FaIcon(FontAwesomeIcons.gear),
           ),
