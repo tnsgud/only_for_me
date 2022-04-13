@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 
@@ -26,6 +27,19 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  void _getStoragePermission() async {
+    var status = await Permission.storage.status;
+    if (status.isDenied) {
+      await Permission.storage.request();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _getStoragePermission();
+  }
+
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(

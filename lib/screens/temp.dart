@@ -3,16 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:only_for_me/screens/search.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:youtube_api/youtube_api.dart';
-
-Future main() async {
-  await dotenv.load(fileName: '.env');
-  runApp(const MyApp());
-}
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);

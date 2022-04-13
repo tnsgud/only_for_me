@@ -1,11 +1,9 @@
-import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:only_for_me/main.dart';
 
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:youtube_api/youtube_api.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -21,13 +19,6 @@ class _SearchPageState extends State<SearchPage> {
   List<YouTubeVideo> youtubeVideos = [];
   List<bool> isSelected = [];
   final TextEditingController _controller = TextEditingController();
-
-  void _getStoragePermission() async {
-    var status = await Permission.storage.status;
-    if (status.isDenied) {
-      await Permission.storage.request();
-    }
-  }
 
   void _downloadYoutubeAudio({
     required String videoId,
@@ -94,8 +85,6 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   void initState() {
-    print('initState');
-    _getStoragePermission();
     youtubeVideos.clear();
     super.initState();
   }
@@ -108,6 +97,7 @@ class _SearchPageState extends State<SearchPage> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
+              autofocus: true,
               controller: _controller,
               textInputAction: TextInputAction.search,
               onSubmitted: (value) {
@@ -136,7 +126,7 @@ class _SearchPageState extends State<SearchPage> {
                           youtubeVideos[index].title,
                         ),
                         onChanged: (bool? value) {
-                          print(youtubeVideos[index]);
+                          log('${youtubeVideos[index]}');
                           setState(() {
                             isSelected[index] = value!;
                           });
