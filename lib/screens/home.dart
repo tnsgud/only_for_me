@@ -3,8 +3,10 @@ import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:only_for_me/models/song.dart';
+import 'package:only_for_me/screens/search.dart';
 import 'package:only_for_me/utils/utils.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
@@ -117,8 +119,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         tooltip: '음악 추가',
         backgroundColor: Colors.deepPurple[400],
         child: const Icon(Icons.add, color: Colors.white),
-        onPressed: () =>
-            audioPlayer.playing ? audioPlayer.pause() : audioPlayer.play(),
+        onPressed: () => Get.to(() => const SearchPage()),
       ),
     );
   }
