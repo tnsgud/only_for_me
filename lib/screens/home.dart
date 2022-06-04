@@ -33,12 +33,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       child: Scaffold(
         appBar: AppBar(
           title: Text(_tabController?.index == 0 ? '내 음악' : '내 카테고리'),
-          actions: [
-            IconButton(
-              onPressed: () => Get.to(() => const SearchPage()),
-              icon: const Icon(Icons.search),
-            )
-          ],
           bottom: TabBar(
             controller: _tabController,
             labelColor: Colors.deepPurple[400],
@@ -64,6 +58,11 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             _myMusic(),
             _myMusicBox(),
           ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.deepPurple[400],
+          child: const Icon(Icons.add, color: Colors.white),
+          onPressed: () => Get.to(() => const SearchPage()),
         ),
       ),
     );

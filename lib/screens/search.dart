@@ -3,10 +3,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import 'package:path_provider/path_provider.dart';
 import 'package:youtube_api/youtube_api.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import '../utils/utils.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({Key? key}) : super(key: key);
@@ -65,14 +66,6 @@ class _SearchPageState extends State<SearchPage> {
     return youtubeVideos;
   }
 
-  Future<File> get _localPlaylistFile async =>
-      File('${await _getExternalDir}/playlist.json');
-
-  get _getExternalDir async {
-    var _externalStorageDirectory = await getExternalStorageDirectory();
-    return _externalStorageDirectory?.path;
-  }
-
   void savePlayList() async {
     // for (var item in isSelected.where((element) => element).map((e) => isSelected.indexOf(e))) {
     //   if(item && MyApp.playlist['K-POP'].contains(element)){
@@ -81,6 +74,11 @@ class _SearchPageState extends State<SearchPage> {
     // }
     // print(MyApp.playlist.keys);
     // print(MyApp.playlist);
+  }
+
+  void addMusic() async {
+    var file = await Utils.localPlaylistFile;
+    log(await file.readAsString());
   }
 
   @override
@@ -147,9 +145,7 @@ class _SearchPageState extends State<SearchPage> {
           ? FloatingActionButton(
               tooltip: 'add Playlist',
               child: const Icon(Icons.add),
-              onPressed: () {
-                savePlayList();
-              },
+              onPressed: () => addMusic(),
             )
           : null,
     );
