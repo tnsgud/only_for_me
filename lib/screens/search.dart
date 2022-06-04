@@ -1,10 +1,8 @@
 import 'dart:developer';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 
 import 'package:youtube_api/youtube_api.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../utils/utils.dart';
@@ -20,30 +18,6 @@ class _SearchPageState extends State<SearchPage> {
   List<YouTubeVideo> youtubeVideos = [];
   List<bool> isSelected = [];
   final TextEditingController _controller = TextEditingController();
-
-  void _downloadYoutubeAudio({
-    required String videoId,
-    required String path,
-  }) async {
-    var manifest =
-        await YoutubeExplode().videos.streamsClient.getManifest(videoId);
-    var streamInfo = manifest.audioOnly.withHighestBitrate();
-    _writeFile(streamInfo: streamInfo, path: path);
-  }
-
-  void _writeFile({
-    required AudioOnlyStreamInfo streamInfo,
-    required String path,
-  }) async {
-    var stream = YoutubeExplode().videos.streamsClient.get(streamInfo);
-    var file = File(path);
-    var fileStream = file.openWrite();
-
-    await stream.pipe(fileStream);
-
-    await fileStream.flush();
-    await fileStream.close();
-  }
 
   Future searchYoutube() async {
     if (_controller.text.isEmpty || youtubeVideos.isNotEmpty) {
@@ -77,8 +51,22 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void addMusic() async {
-    var file = await Utils.localPlaylistFile;
-    log(await file.readAsString());
+    var collection = Utils.getCurrentCollection;
+
+    youtubeVideos
+        .where((element) => isSelected[youtubeVideos.indexOf(element)])
+        .forEach(
+      (element) {
+        collection.add(
+          {
+            'id': element.id,
+            'title': element.title,
+            'url': element.url,
+            'thumbnail': element.thumbnail.medium.url
+          },
+        );
+      },
+    );
   }
 
   @override

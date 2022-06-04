@@ -1,8 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:get/get.dart';
-import 'package:only_for_me/utils/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
@@ -36,19 +34,10 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void _getPlayList() async {
-    var file = await Utils.localPlaylistFile;
-    var database = FirebaseDatabase.instance;
-    var ref = database.ref();
-
-    // if (file.existsSync()) {}
-  }
-
   @override
   void initState() {
     super.initState();
     _getStoragePermission();
-    _getPlayList();
   }
 
   @override

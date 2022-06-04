@@ -1,7 +1,12 @@
-import 'package:get/get.dart';
+import 'dart:developer';
+import 'dart:io';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:only_for_me/screens/search.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:only_for_me/models/song.dart';
+import 'package:only_for_me/utils/utils.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -11,68 +16,128 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
-  TabController? _tabController;
+  List<Song> playList = [];
+  AudioPlayer audioPlayer = AudioPlayer();
+
+  void _downloadYoutubeAudio({
+    required String videoId,
+    required String path,
+  }) async {
+    var manifest =
+        await YoutubeExplode().videos.streamsClient.getManifest(videoId);
+    var streamInfo = manifest.audioOnly.withHighestBitrate();
+    _writeFile(streamInfo: streamInfo, path: path);
+  }
+
+  void _writeFile({
+    required AudioOnlyStreamInfo streamInfo,
+    required String path,
+  }) async {
+    var stream = YoutubeExplode().videos.streamsClient.get(streamInfo);
+    var file = File(path);
+    var fileStream = file.openWrite();
+
+    await stream.pipe(fileStream);
+
+    await fileStream.flush();
+    await fileStream.close();
+  }
+
+  void initialPlayList() async {
+    var collection = Utils.getCurrentCollection;
+    var snapshot = await collection.get();
+
+    for (var doc in snapshot.docs) {
+      var data = doc.data();
+      var song = Song(
+        id: data['id'],
+        title: data['title'],
+        thumbnail: data['thumbnail'],
+        url: data['url'],
+        path: '${await Utils.getExternalDir}/${data["id"]}.mp3',
+      );
+
+      playList.add(song);
+    }
+
+    _downloadYoutubeAudio(videoId: playList[0].id, path: playList[0].path);
+
+    await audioPlayer.setAudioSource(
+      ConcatenatingAudioSource(
+        children: playList.map((e) => e.source).toList(),
+      ),
+    );
+  }
 
   @override
   void initState() {
+    initialPlayList();
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
-    _tabController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      initialIndex: 0,
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(_tabController?.index == 0 ? '내 음악' : '내 카테고리'),
-          bottom: TabBar(
-            controller: _tabController,
-            labelColor: Colors.deepPurple[400],
-            unselectedLabelColor: Colors.white,
-            indicatorColor: Colors.deepPurple[400],
-            tabs: const [
-              Tab(
-                icon: FaIcon(FontAwesomeIcons.music),
-              ),
-              Tab(
-                icon: FaIcon(FontAwesomeIcons.box),
-              ),
-            ],
-            onTap: (index) {
-              setState(() {});
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
             },
-          ),
-          elevation: 0,
-        ),
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _myMusic(),
-            _myMusicBox(),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.deepPurple[400],
-          child: const Icon(Icons.add, color: Colors.white),
-          onPressed: () => Get.to(() => const SearchPage()),
-        ),
+            icon: const Icon(Icons.menu)),
+        title: const Text('내 음악'),
+        elevation: 0,
+      ),
+      body: ListView.builder(
+        itemBuilder: (context, index) {
+          return ListTile(
+            leading: Image.network(playList[index].thumbnail),
+            title: Text(
+              playList[index].title,
+              overflow: TextOverflow.ellipsis,
+            ),
+            onTap: () async {
+              if (!File(playList[index].path).existsSync()) {
+                _downloadYoutubeAudio(
+                    videoId: playList[index].id, path: playList[index].path);
+              }
+
+              await audioPlayer.seek(const Duration(seconds: 5), index: index);
+              audioPlayer.play();
+            },
+          );
+        },
+        itemCount: playList.length,
+      ),
+      floatingActionButton: FloatingActionButton(
+        tooltip: '음악 추가',
+        backgroundColor: Colors.deepPurple[400],
+        child: const Icon(Icons.add, color: Colors.white),
+        onPressed: () =>
+            audioPlayer.playing ? audioPlayer.pause() : audioPlayer.play(),
       ),
     );
   }
 
   Widget _myMusic() {
-    return Column();
+    return TextButton(
+      onPressed: () async {
+        log('hello');
+        var collection = Utils.getCurrentCollection;
+        var snapshot = await collection.get();
+        for (var element in snapshot.docs) {
+          log('${element.data()}');
+        }
+      },
+      child: const Text('get data'),
+    );
   }
 
   Widget _myMusicBox() {
-    return Column();
+    return const Text('box');
   }
 }
