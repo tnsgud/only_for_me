@@ -3,10 +3,8 @@ import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:only_for_me/models/song.dart';
-import 'package:only_for_me/screens/search.dart';
 import 'package:only_for_me/utils/utils.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
@@ -69,6 +67,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         children: playList.map((e) => e.source).toList(),
       ),
     );
+
+    setState(() {});
   }
 
   @override
@@ -119,7 +119,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         tooltip: '음악 추가',
         backgroundColor: Colors.deepPurple[400],
         child: const Icon(Icons.add, color: Colors.white),
-        onPressed: () => Get.to(() => const SearchPage()),
+        onPressed: () {
+          // => Get.to(() => const SearchPage()
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${playList.length}'),
+            ),
+          );
+        },
       ),
     );
   }
