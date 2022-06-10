@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'firebase_options.dart';
@@ -28,6 +29,10 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   void _getStoragePermission() async {
+    if (kIsWeb) {
+      return;
+    }
+
     var status = await Permission.storage.status;
     if (status.isDenied) {
       await Permission.storage.request();
