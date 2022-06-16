@@ -52,17 +52,24 @@ class _SearchPageState extends State<SearchPage> {
 
   void addMusic() async {
     var collection = Utils.getCurrentCollection;
+    var snapshot = await collection.get();
+    var docs = snapshot.docs;
 
     youtubeVideos
-        .where((element) => isSelected[youtubeVideos.indexOf(element)])
+        .where(
+            (youtubeVideo) => isSelected[youtubeVideos.indexOf(youtubeVideo)])
         .forEach(
-      (element) {
-        collection.add(
+      (youtubeVideo) async {
+        if (docs.where((doc) => doc['id'] == youtubeVideo.id).isNotEmpty) {
+          return;
+        }
+
+        await collection.add(
           {
-            'id': element.id,
-            'title': element.title,
-            'url': element.url,
-            'thumbnail': element.thumbnail.medium.url
+            'id': youtubeVideo.id,
+            'title': youtubeVideo.title,
+            'url': youtubeVideo.url,
+            'thumbnail': youtubeVideo.thumbnail.medium.url
           },
         );
       },
@@ -76,30 +83,46 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: TextField(
+          autofocus: true,
+          controller: _controller,
+          textInputAction: TextInputAction.search,
+          decoration: const InputDecoration(
+              border: InputBorder.none, hintText: 'search'),
+          onSubmitted: (value) {
+            setState(() {
+              youtubeVideos.clear();
+            });
+          },
+        ),
+      ),
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              autofocus: true,
-              controller: _controller,
-              textInputAction: TextInputAction.search,
-              onSubmitted: (value) {
-                setState(() {
-                  youtubeVideos.clear();
-                });
-              },
-            ),
-          ),
           FutureBuilder(
             future: searchYoutube(),
             builder: (context, snapshot) {
               if (!snapshot.hasData &&
                   _controller.text.isNotEmpty &&
                   youtubeVideos.isEmpty) {
-                return const CircularProgressIndicator();
+                return const Center(
+                  child: SizedBox(
+                    width: 200,
+                    height: 200,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 15,
+                    ),
+                  ),
+                );
               } else {
                 return Expanded(
                   child: ListView.separated(
@@ -133,7 +156,14 @@ class _SearchPageState extends State<SearchPage> {
           ? FloatingActionButton(
               tooltip: 'add Playlist',
               child: const Icon(Icons.add),
-              onPressed: () => addMusic(),
+              onPressed: () {
+                addMusic();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('이미 플레이리스트에 추가된 곡은 제외했습니다.'),
+                  ),
+                );
+              },
             )
           : null,
     );
