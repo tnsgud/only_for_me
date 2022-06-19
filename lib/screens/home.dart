@@ -45,7 +45,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     await fileStream.close();
   }
 
-  Future<List<Song>> getPlayListData() async {
+  Future<List<Song>> _getPlayListData() async {
     var list = <Song>[];
     var collection = Utils.getCurrentCollection;
     var snapshot = await collection.get();
@@ -70,15 +70,19 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   }
 
   Future<List<Song>> initialPlayList() async {
-    playList = await getPlayListData();
+    playList = await _getPlayListData();
 
-    _downloadYoutubeAudio(videoId: playList[0].id, path: playList[0].path);
+    if (!File(playList[0].path).existsSync()) {
+      _downloadYoutubeAudio(videoId: playList[0].id, path: playList[0].path);
+    }
 
-    // await audioPlayer.setAudioSource(
-    //   ConcatenatingAudioSource(
-    //     children: playList.map((e) => e.source).toList(),
-    //   ),
-    // );
+    var audioSource = playList.map((e) => e.source).toList();
+
+    await audioPlayer.setAudioSource(
+      ConcatenatingAudioSource(
+        children: audioSource,
+      ),
+    );
 
     return playList;
   }
@@ -168,14 +172,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           Get.to(() => const SearchPage());
           initialPlayList();
         },
-        // onPressed: () {
-        //   //
-        //   ScaffoldMessenger.of(context).showSnackBar(
-        //     SnackBar(
-        //       content: Text('${playList.length}'),
-        //     ),
-        //   );
-        // },
       ),
     );
   }
