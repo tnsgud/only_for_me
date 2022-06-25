@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
@@ -61,7 +62,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         title: data['title'],
         thumbnail: data['thumbnail'],
         url: data['url'],
-        path: '${await Utils.getExternalDir}/${data["id"]}.mp3',
+        path: kIsWeb ? '' : '${await Utils.getExternalDir}/${data["id"]}.mp3',
       );
       list.add(song);
     }
@@ -72,25 +73,25 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   Future<List<Song>> initialPlayList() async {
     playList = await _getPlayListData();
 
-    if (!File(playList[0].path).existsSync()) {
-      _downloadYoutubeAudio(videoId: playList[0].id, path: playList[0].path);
-    }
+    // if (!File(playList[0].path).existsSync()) {
+    //   _downloadYoutubeAudio(videoId: playList[0].id, path: playList[0].path);
+    // }
 
-    var audioSource = playList.map((e) => e.source).toList();
+    // var audioSource = playList.map((e) => e.source).toList();
 
-    await audioPlayer.setAudioSource(
-      ConcatenatingAudioSource(
-        children: audioSource,
-      ),
-    );
+    // await audioPlayer.setAudioSource(
+    //   ConcatenatingAudioSource(
+    //     children: audioSource,
+    //   ),
+    // );
 
     return playList;
   }
 
   @override
   void initState() {
-    initialPlayList();
     super.initState();
+    initialPlayList();
   }
 
   @override
@@ -113,10 +114,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       body: FutureBuilder(
           future: initialPlayList(),
           builder: (context, snapshot) {
-            log('builder called');
-            if (!snapshot.hasData) {
-              return const CircularProgressIndicator();
-            }
+            // if (!snapshot.hasData) {
+            //   return const CircularProgressIndicator();
+            // }
 
             if (playList.isEmpty) {
               return Center(
