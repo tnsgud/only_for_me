@@ -149,15 +149,16 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                     overflow: TextOverflow.ellipsis,
                   ),
                   onTap: () async {
-                    if (!File(playList[index].path).existsSync()) {
-                      _downloadYoutubeAudio(
-                          videoId: playList[index].id,
-                          path: playList[index].path);
-                    }
+                    log('${playList[index].path.isEmpty}');
+                    // if (!File(playList[index].path).existsSync()) {
+                    //   _downloadYoutubeAudio(
+                    //       videoId: playList[index].id,
+                    //       path: playList[index].path);
+                    // }
 
-                    await audioPlayer.seek(const Duration(seconds: 5),
-                        index: index);
-                    audioPlayer.play();
+                    // await audioPlayer.seek(const Duration(seconds: 5),
+                    //     index: index);
+                    // audioPlayer.play();
                   },
                 );
               },

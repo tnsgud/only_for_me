@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -30,7 +30,7 @@ class _LoginState extends State<Login> {
     );
   }
 
-  Future<UserCredential> signInWithGoogle() async {
+  Future<UserCredential> _handleSignIn() async {
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
     final GoogleSignInAuthentication? googleAuth =
@@ -68,10 +68,10 @@ class _LoginState extends State<Login> {
               child: TextButton.icon(
                 icon: const FaIcon(
                   FontAwesomeIcons.google,
-                  color: Colors.white,
+                  color: Color.fromARGB(255, 255, 255, 255),
                 ),
                 label: textWithNotoSans(data: '구글로 로그인', fontSize: 20),
-                onPressed: signInWithGoogle,
+                onPressed: _handleSignIn,
                 style: TextButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),

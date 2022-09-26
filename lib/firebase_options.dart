@@ -72,8 +72,10 @@ class DefaultFirebaseOptions {
     projectId: 'only-for-me-5392',
     databaseURL: 'https://only-for-me-5392-default-rtdb.firebaseio.com',
     storageBucket: 'only-for-me-5392.appspot.com',
-    androidClientId: '915956392136-egtp7gegub14duspubh09k123fue465h.apps.googleusercontent.com',
-    iosClientId: '915956392136-0m88ge2o10o7bsq9950gkilll7jn8nfm.apps.googleusercontent.com',
+    androidClientId:
+        '915956392136-egtp7gegub14duspubh09k123fue465h.apps.googleusercontent.com',
+    iosClientId:
+        '915956392136-0m88ge2o10o7bsq9950gkilll7jn8nfm.apps.googleusercontent.com',
     iosBundleId: 'com.example.onlyForMe',
   );
 }
